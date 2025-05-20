@@ -7,7 +7,8 @@ import { Platform, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MiniPlayer from '../components/MiniPlayer';
 import Colors from '../constants/Colors';
-import { AudioPlayerProvider, useAudioPlayer } from '../contexts/AudioPlayerContext';
+import { AudioPlayerProvider, useAudioPlayer } from '../contexts/AudioPlayerContext'
+import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 
 // Keep splash screen visible while loading
 SplashScreen.preventAutoHideAsync();
@@ -123,6 +124,7 @@ function TabsLayout() {
 }
 
 export default function RootLayout() {
+  useFrameworkReady();
   useEffect(() => {
     // Hide splash screen when app is ready
     SplashScreen.hideAsync();
