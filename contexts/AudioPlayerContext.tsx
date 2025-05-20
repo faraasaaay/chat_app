@@ -39,12 +39,14 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
         const audioConfig: any = {
           playsInSilentModeIOS: true,
           staysActiveInBackground: true,
-          shouldDuckAndroid: false,
+          shouldDuckAndroid: true,
         };
 
-        // Only add iOS-specific configuration when running on iOS
+        // Platform-specific configurations
         if (Platform.OS === 'ios') {
-          audioConfig.interruptionModeIOS = Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX;
+          audioConfig.interruptionModeIOS = Audio.INTERRUPTION_MODE_IOS_MIX_WITH_OTHERS;
+        } else if (Platform.OS === 'android') {
+          audioConfig.interruptionModeAndroid = Audio.INTERRUPTION_MODE_ANDROID_DUCK_OTHERS;
         }
 
         await Audio.setAudioModeAsync(audioConfig);
