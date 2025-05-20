@@ -17,7 +17,7 @@ interface AudioPlayerContextType {
   playlist: DownloadedSong[];
   setPlaylist: (songs: DownloadedSong[]) => void;
   stopSong: () => Promise<void>;
-  stopSongAndClear: () => Promise<void>; // Now properly returns a Promise
+  stopSongAndClear: () => Promise<void>;
 }
 
 const AudioPlayerContext = createContext<AudioPlayerContextType | undefined>(undefined);
@@ -29,7 +29,7 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
   const [playlist, setPlaylist] = useState<DownloadedSong[]>([]);
-  const [masterPlaylist, setMasterPlaylist] = useState<DownloadedSong[]>([]); // Keep a master playlist that doesn't get cleared
+  const [masterPlaylist, setMasterPlaylist] = useState<DownloadedSong[]>([]);
 
   // Initialize audio
   useEffect(() => {
@@ -38,9 +38,9 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
         await Audio.setAudioModeAsync({
           playsInSilentModeIOS: true,
           staysActiveInBackground: true,
-          interruptionModeAndroid: Audio.InterruptionModeAndroid.DuckOthers,
-          interruptionModeIOS: Audio.InterruptionModeIOS.MixWithOthers,
-          shouldDuckAndroid: true, // This might be redundant if interruptionModeAndroid is set, but keeping for now
+          // Remove the problematic Android interruption mode
+          shouldDuckAndroid: false,
+          interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
         });
       } catch (error) {
         console.error('Error initializing audio:', error);
@@ -133,14 +133,22 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
   };
 
   const pauseSong = async () => {
-    if (playbackInstance) {
-      await playbackInstance.pauseAsync();
+    try {
+      if (playbackInstance) {
+        await playbackInstance.pauseAsync();
+      }
+    } catch (error) {
+      console.error('Error pausing song:', error);
     }
   };
 
   const resumeSong = async () => {
-    if (playbackInstance) {
-      await playbackInstance.playAsync();
+    try {
+      if (playbackInstance) {
+        await playbackInstance.playAsync();
+      }
+    } catch (error) {
+      console.error('Error resuming song:', error);
     }
   };
 
@@ -208,11 +216,8 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const stopSongAndClear = async () => {
     await stopSong();
-    // We no longer clear the playlist here
-    // Instead, we just unload the current song but keep playlist history
   };
 
-  // Custom playlist setter that updates both lists
   const setPlaylistWithMaster = (songs: DownloadedSong[]) => {
     setPlaylist(songs);
     if (songs.length > 0) {

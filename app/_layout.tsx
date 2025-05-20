@@ -3,7 +3,7 @@ import { Tabs, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MiniPlayer from '../components/MiniPlayer';
 import Colors from '../constants/Colors';
@@ -13,7 +13,7 @@ import { AudioPlayerProvider, useAudioPlayer } from '../contexts/AudioPlayerCont
 SplashScreen.preventAutoHideAsync();
 
 const MINI_PLAYER_HEIGHT = 67; // Define MiniPlayer height (65 for player + 2 for progress bar)
-const TAB_BAR_HEIGHT = 60; // Defined in tabBarStyle
+const TAB_BAR_HEIGHT = Platform.OS === 'android' ? 70 : 60; // Increased height for Android
 
 function TabsLayout() {
   const { currentSong } = useAudioPlayer();
@@ -21,35 +21,40 @@ function TabsLayout() {
   const currentRoute = router.pathname;
   
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.dark.background }}> 
+    <View style={{ 
+      flex: 1, 
+      backgroundColor: Colors.dark.background,
+      // Add padding for Android navigation bar
+      paddingBottom: Platform.OS === 'android' ? 24 : 0
+    }}> 
       <Tabs
         sceneContainerStyle={{
           // Add padding to the bottom of screen content if MiniPlayer is visible
           paddingBottom: currentSong && currentRoute !== '/player' ? MINI_PLAYER_HEIGHT : 0,
         }}
-          screenOptions={{
-            tabBarStyle: {
-              backgroundColor: Colors.dark.background,
-              borderTopColor: Colors.dark.border,
-              borderTopWidth: 1,
-              height: 70, // Increased height for the tab bar
-              paddingBottom: 8, // Increased padding
-              paddingTop: 8, // Increased padding
-              elevation: 10, // Slightly increased elevation
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: -4 }, // Adjusted shadow
-              shadowOpacity: 0.25,
-              shadowRadius: 5,
-            },
+        screenOptions={{
+          tabBarStyle: {
+            backgroundColor: Colors.dark.background,
+            borderTopColor: Colors.dark.border,
+            borderTopWidth: 1,
+            height: TAB_BAR_HEIGHT,
+            paddingBottom: Platform.OS === 'android' ? 12 : 8,
+            paddingTop: 8,
+            elevation: 10,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: -4 },
+            shadowOpacity: 0.25,
+            shadowRadius: 5,
+          },
           tabBarActiveTintColor: Colors.dark.primary,
           tabBarInactiveTintColor: Colors.dark.subText,
           tabBarLabelStyle: {
-            fontSize: 13, // Increased font size
-            fontWeight: '600', // Bolder font weight
-            marginBottom: 5, // Adjusted margin
+            fontSize: 13,
+            fontWeight: '600',
+            marginBottom: 5,
           },
           tabBarIconStyle: {
-            marginTop: 2, // Adjusted icon margin
+            marginTop: 2,
           },
           headerStyle: {
             backgroundColor: Colors.dark.background,
@@ -71,7 +76,7 @@ function TabsLayout() {
           name="index"
           options={{
             title: 'Search',
-            headerShown: false, // Hide default header for Search screen
+            headerShown: false,
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="search" size={size} color={color} />
             ),
@@ -91,24 +96,23 @@ function TabsLayout() {
           name="player"
           options={{
             title: 'Now Playing',
-            headerShown: false, // Hide default header for Player screen
+            headerShown: false,
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="musical-notes" size={size} color={color} />
             ),
-            href: null, // Only accessible through the mini player
+            href: null,
           }}
         />
-        </Tabs>
-      {/* MiniPlayer is rendered here, on top of Tabs, positioned above the TabBar */}
+      </Tabs>
       {currentSong && currentRoute !== '/player' && (
         <View
           style={{
             position: 'absolute',
             left: 0,
             right: 0,
-            bottom: TAB_BAR_HEIGHT, // Position MiniPlayer's container above the tab bar
+            bottom: TAB_BAR_HEIGHT,
             height: MINI_PLAYER_HEIGHT,
-            display: currentRoute === '/player' ? 'none' : 'flex', // Extra safety to ensure it's hidden on player page
+            display: currentRoute === '/player' ? 'none' : 'flex',
           }}
         >
           <MiniPlayer />
