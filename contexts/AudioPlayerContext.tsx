@@ -1,5 +1,6 @@
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import { DownloadedSong } from '../services/api';
 
 interface AudioPlayerContextType {
@@ -35,13 +36,18 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
   useEffect(() => {
     const initAudio = async () => {
       try {
-        await Audio.setAudioModeAsync({
+        const audioConfig: any = {
           playsInSilentModeIOS: true,
           staysActiveInBackground: true,
-          // Remove the problematic Android interruption mode
           shouldDuckAndroid: false,
-          interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
-        });
+        };
+
+        // Only add iOS-specific configuration when running on iOS
+        if (Platform.OS === 'ios') {
+          audioConfig.interruptionModeIOS = Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX;
+        }
+
+        await Audio.setAudioModeAsync(audioConfig);
       } catch (error) {
         console.error('Error initializing audio:', error);
       }
