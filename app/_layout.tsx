@@ -7,14 +7,14 @@ import { Platform, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MiniPlayer from '../components/MiniPlayer';
 import Colors from '../constants/Colors';
-import { AudioPlayerProvider, useAudioPlayer } from '../contexts/AudioPlayerContext'
+import { AudioPlayerProvider, useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 
 // Keep splash screen visible while loading
 SplashScreen.preventAutoHideAsync();
 
 const MINI_PLAYER_HEIGHT = 67; // Define MiniPlayer height (65 for player + 2 for progress bar)
-const TAB_BAR_HEIGHT = Platform.OS === 'android' ? 70 : 60; // Increased height for Android
+const TAB_BAR_HEIGHT = Platform.OS === 'android' ? 70 : 60; // Adjusted height for Android
 
 function TabsLayout() {
   const { currentSong } = useAudioPlayer();
@@ -52,10 +52,10 @@ function TabsLayout() {
           tabBarLabelStyle: {
             fontSize: 13,
             fontWeight: '600',
-            marginBottom: 5,
+            marginBottom: Platform.OS === 'android' ? 0 : 5,
           },
           tabBarIconStyle: {
-            marginTop: 2,
+            marginTop: Platform.OS === 'android' ? 0 : 2,
           },
           headerStyle: {
             backgroundColor: Colors.dark.background,
@@ -111,7 +111,7 @@ function TabsLayout() {
             position: 'absolute',
             left: 0,
             right: 0,
-            bottom: TAB_BAR_HEIGHT,
+            bottom: TAB_BAR_HEIGHT + (Platform.OS === 'android' ? 24 : 0),
             height: MINI_PLAYER_HEIGHT,
             display: currentRoute === '/player' ? 'none' : 'flex',
           }}
